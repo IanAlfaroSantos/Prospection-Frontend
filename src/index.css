@@ -1,0 +1,12 @@
+/* index.css - Cleaned to prevent interference with premium styles */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
