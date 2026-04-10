@@ -13,7 +13,7 @@ const Responses = () => {
             try {
                 const token = localStorage.getItem('token');
                 // FETCH REAL DATA FROM API
-                const response = await axios.get('http://localhost:3000/api/responses', {
+                const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/responses', {
                     headers: { 'x-token': token }
                 });
                 setResponses(response.data);

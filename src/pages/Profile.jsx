@@ -46,7 +46,7 @@ const Profile = () => {
         setPasswordLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.put('http://localhost:3000/api/auth/change-password', passwordData, {
+            await axios.put('https://prospection-backend-production-fce5.up.railway.app/api/auth/change-password', passwordData, {
                 headers: { 'x-token': token }
             });
             toast.success("Contraseña actualizada con éxito");
@@ -64,7 +64,7 @@ const Profile = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put('http://localhost:3000/api/auth/profile', formData, {
+            const response = await axios.put('https://prospection-backend-production-fce5.up.railway.app/api/auth/profile', formData, {
                 headers: { 'x-token': token }
             });
             login(response.data, token);

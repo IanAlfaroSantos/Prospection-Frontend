@@ -28,7 +28,7 @@ const Leads = () => {
     const fetchLeads = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/companies', {
+            const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/companies', {
                 headers: { 'x-token': token }
             });
             setLeads(response.data);
@@ -47,7 +47,7 @@ const Leads = () => {
         setDetailsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:3000/api/companies/${id}`, {
+            const response = await axios.get(`https://prospection-backend-production-fce5.up.railway.app/api/companies/${id}`, {
                 headers: { 'x-token': token }
             });
             setSelectedLead(response.data);
@@ -74,7 +74,7 @@ const Leads = () => {
         setAddingContact(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`http://localhost:3000/api/companies/${selectedLead._id}/contacts`, 
+            const response = await axios.post(`https://prospection-backend-production-fce5.up.railway.app/api/companies/${selectedLead._id}/contacts`, 
                 { email: newContactEmail, type: 'General' },
                 { headers: { 'x-token': token } }
             );
@@ -95,7 +95,7 @@ const Leads = () => {
         if (!id) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:3000/api/companies/contact/${id}`, {
+            await axios.delete(`https://prospection-backend-production-fce5.up.railway.app/api/companies/contact/${id}`, {
                 headers: { 'x-token': token }
             });
             setSelectedLead({
@@ -114,7 +114,7 @@ const Leads = () => {
         setSendingEmail(true);
         try {
             const token = localStorage.getItem('token');
-            const url = composeModal.type === 'mass' ? 'http://localhost:3000/api/companies/mass-email' : `http://localhost:3000/api/companies/${composeModal.target}/contact`;
+            const url = composeModal.type === 'mass' ? 'https://prospection-backend-production-fce5.up.railway.app/api/companies/mass-email' : `https://prospection-backend-production-fce5.up.railway.app/api/companies/${composeModal.target}/contact`;
             await axios.post(url, emailData, { headers: { 'x-token': token } });
             toast.success("¡Mensaje enviado!");
             setComposeModal({ open: false, type: 'single', target: null });
@@ -130,7 +130,7 @@ const Leads = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:3000/api/companies', newLead, { headers: { 'x-token': token } });
+            await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/companies', newLead, { headers: { 'x-token': token } });
             toast.success("Empresa añadida");
             setManualModalOpen(false);
             fetchLeads();

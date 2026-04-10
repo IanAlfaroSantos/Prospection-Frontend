@@ -13,7 +13,7 @@ const Campaigns = () => {
             try {
                 const token = localStorage.getItem('token');
                 // FETCH REAL DATA
-                const response = await axios.get('http://localhost:3000/api/campaigns', {
+                const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/campaigns', {
                     headers: { 'x-token': token }
                 });
                 setCampaigns(response.data);

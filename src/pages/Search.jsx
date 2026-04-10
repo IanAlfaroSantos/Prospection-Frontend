@@ -23,7 +23,7 @@ const Search = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:3000/api/search/start', {
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/search/start', {
                 query,
                 location
             }, {
@@ -40,7 +40,7 @@ const Search = () => {
     const handleProspect = async (company) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:3000/api/companies', {
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/companies', {
                 name: company.title,
                 website: company.link,
                 sector: query,

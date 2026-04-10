@@ -19,7 +19,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/login', formData);
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/login', formData);
             login(response.data.user, response.data.token);
             toast.success("¡Bienvenido de nuevo!");
             navigate('/dashboard');

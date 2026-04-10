@@ -17,7 +17,7 @@ const ForgotPassword = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/forgot-password', { email });
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/forgot-password', { email });
             if (response.data.success) {
                 toast.success("Código enviado a tu correo");
                 setStep(2);
@@ -35,7 +35,7 @@ const ForgotPassword = () => {
         
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/reset-password', { 
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/reset-password', { 
                 email, 
                 code, 
                 newPassword 

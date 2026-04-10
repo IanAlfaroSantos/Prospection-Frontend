@@ -17,7 +17,7 @@ const Dashboard = () => {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:3000/api/companies/stats', {
+                const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/companies/stats', {
                     headers: { 'x-token': token }
                 });
                 setStats(prev => ({

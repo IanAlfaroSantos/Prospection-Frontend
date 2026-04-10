@@ -22,7 +22,7 @@ const Register = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/register', formData);
+            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/register', formData);
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
             toast.success("¡Registro exitoso!");
