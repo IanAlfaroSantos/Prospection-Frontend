@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
 import { User, Mail, Lock, Building, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -22,9 +24,8 @@ const Register = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/register', formData);
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            const response = await api.post('/api/auth/register', formData);
+            login(response.data.user, response.data.token);
             toast.success("¡Registro exitoso!");
             navigate('/dashboard');
         } catch (error) {

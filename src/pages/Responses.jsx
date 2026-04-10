@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '../components/UI';
 import { MessageSquare, ExternalLink, Loader2, UserPlus, Filter } from 'lucide-react';
-import axios from 'axios';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 
 const Responses = () => {
@@ -12,8 +12,7 @@ const Responses = () => {
         const fetchResponses = async () => {
             try {
                 const token = localStorage.getItem('token');
-                // FETCH REAL DATA FROM API
-                const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/responses', {
+                const response = await api.get('/api/responses', {
                     headers: { 'x-token': token }
                 });
                 setResponses(response.data);

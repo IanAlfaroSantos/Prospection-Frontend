@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Card, Button } from '../components/UI';
 import { Mail, Key, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 
 const ForgotPassword = () => {
-    const [step, setStep] = useState(1); // 1: Email, 2: Code & New Password
+    const [step, setStep] = useState(1);
     const [email, setEmail] = useState('');
     const [code, setCode] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -17,7 +17,7 @@ const ForgotPassword = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/forgot-password', { email });
+            const response = await api.post('/api/auth/forgot-password', { email });
             if (response.data.success) {
                 toast.success("Código enviado a tu correo");
                 setStep(2);
@@ -35,7 +35,7 @@ const ForgotPassword = () => {
         
         setLoading(true);
         try {
-            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/reset-password', { 
+            const response = await api.post('/api/auth/reset-password', { 
                 email, 
                 code, 
                 newPassword 

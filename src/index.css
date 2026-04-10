@@ -1,12 +1,43 @@
-/* index.css - Cleaned to prevent interference with premium styles */
 #root {
   width: 100%;
   min-height: 100vh;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.link-wrap {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar-shell {
+    width: 100% !important;
+    min-height: auto !important;
+    position: relative !important;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+}

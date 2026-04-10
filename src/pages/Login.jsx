@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
 import { Mail, Lock, Loader2, Building } from 'lucide-react';
-import axios from 'axios';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,7 +19,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('https://prospection-backend-production-fce5.up.railway.app/api/auth/login', formData);
+            const response = await api.post('/api/auth/login', formData);
             login(response.data.user, response.data.token);
             toast.success("¡Bienvenido de nuevo!");
             navigate('/dashboard');

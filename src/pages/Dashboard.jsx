@@ -1,118 +1,96 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '../components/UI';
-import { Users, Building2, Send, MessageSquare, TrendingUp, MapPin, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { Users, Building2, Send, MessageSquare, MapPin, Loader2, Sparkles } from 'lucide-react';
+import api from '../service/api';
 
 const Dashboard = () => {
-    const [stats, setStats] = useState({
-        totalCompanies: 0,
-        totalContacts: 0,
-        campaignsSent: 0,
-        responses: 0,
-        statsByCountry: []
-    });
-    const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalCompanies: 0,
+    totalContacts: 0,
+    campaignsSent: 0,
+    responses: 0,
+    statsByCountry: []
+  });
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('https://prospection-backend-production-fce5.up.railway.app/api/companies/stats', {
-                    headers: { 'x-token': token }
-                });
-                setStats(prev => ({
-                    ...prev,
-                    totalCompanies: response.data.totalCompanies,
-                    totalContacts: response.data.totalContacts,
-                    statsByCountry: response.data.statsByCountry
-                }));
-            } catch (error) {
-                console.error("Error fetching stats:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStats();
-    }, []);
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await api.get('/api/companies/stats', { headers: { 'x-token': token } });
+        setStats((prev) => ({
+          ...prev,
+          totalCompanies: response.data.totalCompanies,
+          totalContacts: response.data.totalContacts,
+          statsByCountry: response.data.statsByCountry || []
+        }));
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const statCards = [
-        { label: 'Empresas Encontradas', value: stats.totalCompanies, icon: <Building2 className="text-blue-500" />, color: '#3b82f6' },
-        { label: 'Contactos Extraídos', value: stats.totalContacts, icon: <Users className="text-purple-500" />, color: '#a855f7' },
-        { label: 'Campañas Enviadas', value: stats.campaignsSent, icon: <Send className="text-green-500" />, color: '#10b981' },
-        { label: 'Respuestas Recibidas', value: stats.responses, icon: <MessageSquare className="text-orange-500" />, color: '#f59e0b' },
-    ];
+    fetchStats();
+  }, []);
 
-    if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-            <Loader2 className="animate-spin" size={48} color="var(--accent)" />
-        </div>
-    );
+  const cards = useMemo(() => [
+    { label: 'Empresas Encontradas', value: stats.totalCompanies, icon: <Building2 size={24} />, color: '#3b82f6' },
+    { label: 'Contactos Extraídos', value: stats.totalContacts, icon: <Users size={24} />, color: '#8b5cf6' },
+    { label: 'Campañas Enviadas', value: stats.campaignsSent, icon: <Send size={24} />, color: '#10b981' },
+    { label: 'Respuestas Recibidas', value: stats.responses, icon: <MessageSquare size={24} />, color: '#f59e0b' }
+  ], [stats]);
 
-    return (
-        <div className="dashboard">
-            <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800' }}>Dashboard Comercial</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Resumen de prospección en Centroamérica</p>
-            </header>
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><Loader2 className="animate-spin" size={48} color="var(--accent)" /></div>;
+  }
 
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-                gap: '20px',
-                marginBottom: '40px' 
-            }}>
-                {statCards.map((stat, i) => (
-                    <Card key={i} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ 
-                            width: '50px', 
-                            height: '50px', 
-                            borderRadius: '12px', 
-                            backgroundColor: `${stat.color}20`, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            color: stat.color
-                        }}>
-                            {stat.icon}
-                        </div>
-                        <div>
-                            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>{stat.label}</p>
-                            <h3 style={{ fontSize: '24px', fontWeight: '800' }}>{stat.value.toLocaleString()}</h3>
-                        </div>
-                    </Card>
-                ))}
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <header>
+        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '900', marginBottom: '6px' }}>Dashboard Comercial</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Resumen de prospección en Centroamérica</p>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+        {cards.map((item) => (
+          <Card key={item.label} hover={false} style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+            <div style={{ width: '58px', height: '58px', borderRadius: '18px', backgroundColor: `${item.color}20`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</div>
+            <div>
+              <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '600' }}>{item.label}</div>
+              <div style={{ fontSize: '2rem', fontWeight: '900' }}>{item.value}</div>
             </div>
+          </Card>
+        ))}
+      </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-                <Card>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Actividad de Prospección Reciente</h3>
-                        <TrendingUp size={18} color="var(--success)" />
-                    </div>
-                    <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                        El sistema está listo para monitorizar tus nuevas búsquedas.
-                    </div>
-                </Card>
-
-                <Card>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>Distribución por País</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        {stats.statsByCountry.length > 0 ? (
-                            stats.statsByCountry.map(item => (
-                                <div key={item._id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <MapPin size={16} color="var(--text-muted)" />
-                                    <span style={{ flex: 1, fontSize: '14px' }}>{item._id}</span>
-                                    <span style={{ fontWeight: '700' }}>{item.count}</span>
-                                </div>
-                            ))
-                        ) : (
-                            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Sin datos geográficos aún.</p>
-                        )}
-                    </div>
-                </Card>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(280px, 1fr)', gap: '20px' }}>
+        <Card hover={false} style={{ minHeight: '380px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '900' }}>Actividad reciente</h3>
+            <Sparkles color="#38bdf8" />
+          </div>
+          <div style={{ flex: 1, borderRadius: '24px', border: '1px dashed var(--border)', background: 'linear-gradient(180deg, rgba(56,189,248,0.06), transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '32px' }}>
+            <div>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '8px' }}>Tu panel ya está listo</h4>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '520px' }}>Cuando realices nuevas búsquedas y campañas, aquí se irán reflejando las empresas, contactos y movimientos recientes.</p>
             </div>
-        </div>
-    );
+          </div>
+        </Card>
+
+        <Card hover={false} style={{ minHeight: '380px' }}>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: '900', marginBottom: '20px' }}>Distribución por país</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {stats.statsByCountry.length > 0 ? stats.statsByCountry.map((item) => (
+              <div key={item._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                <MapPin size={18} color="#8b5cf6" />
+                <span style={{ flex: 1, fontWeight: '700' }}>{item._id || 'Sin país'}</span>
+                <span style={{ fontWeight: '900' }}>{item.count}</span>
+              </div>
+            )) : <p style={{ color: 'var(--text-muted)' }}>Sin datos geográficos aún.</p>}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;
