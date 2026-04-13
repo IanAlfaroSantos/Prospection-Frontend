@@ -134,11 +134,6 @@ const Search = () => {
                                     <Globe size={16} color="var(--accent)" /> {company.link} <ExternalLink size={15} />
                                 </a>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-                                <Button variant="cyan" onClick={() => handleProspect(company)} disabled={saving.has(company.link || company.title)}>
-                                    {saving.has(company.link || company.title) ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />} AÑADIR A LEADS
-                                </Button>
-                            </div>
                         </Card>
                     ))}
                 </div>
