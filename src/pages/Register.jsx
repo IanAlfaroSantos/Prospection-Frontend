@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
 import { User, Mail, Lock, Building, Loader2 } from 'lucide-react';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -25,7 +23,8 @@ const Register = () => {
         setLoading(true);
         try {
             const response = await api.post('/api/auth/register', formData);
-            login(response.data.user, response.data.token);
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
             toast.success("¡Registro exitoso!");
             navigate('/dashboard');
         } catch (error) {

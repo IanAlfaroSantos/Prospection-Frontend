@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Card, Button } from '../components/UI';
 import { Mail, Key, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
 const ForgotPassword = () => {
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(1); // 1: Email, 2: Code & New Password
     const [email, setEmail] = useState('');
     const [code, setCode] = useState('');
     const [newPassword, setNewPassword] = useState('');

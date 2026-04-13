@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '../components/UI';
 import { Send, Plus, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
 const Campaigns = () => {
@@ -12,6 +12,7 @@ const Campaigns = () => {
         const fetchCampaigns = async () => {
             try {
                 const token = localStorage.getItem('token');
+                // FETCH REAL DATA
                 const response = await api.get('/api/campaigns', {
                     headers: { 'x-token': token }
                 });

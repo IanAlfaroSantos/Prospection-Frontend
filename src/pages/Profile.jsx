@@ -1,199 +1,244 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, Button, Modal } from '../components/UI';
-import { User, Phone, Mail, Shield, Building2, Upload, Save, Key } from 'lucide-react';
-import api from '../service/api';
+import { User, Building, Mail, Save, Shield, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import api from '../service/api.jsx';
 
 const Profile = () => {
-  const { user, login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    lastName: user?.lastName || '',
-    username: user?.username || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
-    organization: user?.organization || 'Sencom',
-    profileImage: user?.profileImage || '',
-    companyLogo: user?.companyLogo || ''
-  });
-  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '' });
+    const { user, login } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: user?.name || '',
+        lastName: user?.lastName || '',
+        username: user?.username || '',
+        phone: user?.phone || '',
+        organization: user?.organization || '',
+        email: user?.email || '',
+        profileImage: user?.profileImage || user?.image || '',
+        companyLogo: user?.companyLogo || ''
+    });
+    
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '' });
+    const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const previewUserImage = useMemo(() => formData.profileImage || '', [formData.profileImage]);
-  const previewLogo = useMemo(() => formData.companyLogo || '', [formData.companyLogo]);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setFormData({ ...formData, profileImage: reader.result });
+            reader.readAsDataURL(file);
+        }
+    };
 
-  const toBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setFormData({ ...formData, companyLogo: reader.result });
+            reader.readAsDataURL(file);
+        }
+    };
 
-  const handleFile = async (event, field) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const base64 = await toBase64(file);
-      setFormData((prev) => ({ ...prev, [field]: base64 }));
-    } catch {
-      toast.error('No se pudo procesar la imagen');
-    }
-  };
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            await api.put('/api/auth/change-password', passwordData, {
+                headers: { 'x-token': token }
+            });
+            toast.success("Contraseña actualizada con éxito");
+            setIsPasswordModalOpen(false);
+            setPasswordData({ oldPassword: '', newPassword: '' });
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Error al actualizar contraseña");
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await api.put('/api/auth/profile', formData, { headers: { 'x-token': token } });
-      login(response.data, token);
-      toast.success('Perfil actualizado');
-    } catch {
-      toast.error('No se pudo guardar el perfil');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await api.put('/api/auth/profile', formData, {
+                headers: { 'x-token': token }
+            });
+            login(response.data, token);
+            toast.success("¡Perfil actualizado con éxito!");
+        } catch (error) {
+            toast.error("Error al actualizar el perfil");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    setPasswordLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await api.put('/api/auth/change-password', passwordData, { headers: { 'x-token': token } });
-      setPasswordData({ oldPassword: '', newPassword: '' });
-      setIsPasswordModalOpen(false);
-      toast.success('Contraseña actualizada');
-    } catch (error) {
-      toast.error(error.response?.data?.msg || 'No se pudo cambiar la contraseña');
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
+    return (
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <header style={{ marginBottom: '40px' }}>
+                <h1 style={{ fontSize: '42px', fontWeight: '900', letterSpacing: '-0.06em' }}>Configuración de <span style={{ color: 'var(--accent)' }}>Cuenta</span></h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '18px' }}>Gestiona tu identidad y el branding de tu plataforma</p>
+            </header>
 
-  return (
-    <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <header>
-        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.3rem)', fontWeight: '900', marginBottom: '8px' }}>Perfil Estratégico</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>Administra tus datos personales, marca blanca y seguridad.</p>
-      </header>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
+                <Card style={{ padding: '40px' }}>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <User size={22} color="var(--accent)" /> DATOS PERSONALES
+                        </h3>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(280px, 0.8fr)', gap: '24px' }}>
-        <Card hover={false}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-                NOMBRE
-                <div style={{ position: 'relative' }}>
-                  <User style={{ position: 'absolute', left: '14px', top: '16px', color: 'var(--accent)' }} size={18} />
-                  <input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%', paddingLeft: '44px', height: '52px' }} />
-                </div>
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-                APELLIDO
-                <input value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} style={{ width: '100%', height: '52px' }} />
-              </label>
-            </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: formData.profileImage ? 'transparent' : 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {formData.profileImage ? (
+                                    <img src={formData.profileImage} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                ) : (
+                                    <User size={40} color="var(--text-muted)" />
+                                )}
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '13px', fontWeight: '900', color: 'var(--accent)', cursor: 'pointer', padding: '8px 16px', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px' }}>
+                                    SUBIR FOTO
+                                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
+                                </label>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>JPG, PNG o GIF. Máx 2MB.</p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>NOMBRE</label>
+                            <input 
+                                required 
+                                style={{ padding: '16px', fontSize: '16px' }} 
+                                value={formData.name}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            />
+                        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-                NOMBRE DE USUARIO
-                <input value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} style={{ width: '100%', height: '52px' }} />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-                TELÉFONO
-                <div style={{ position: 'relative' }}>
-                  <Phone style={{ position: 'absolute', left: '14px', top: '16px', color: 'var(--accent)' }} size={18} />
-                  <input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} style={{ width: '100%', paddingLeft: '44px', height: '52px' }} />
-                </div>
-              </label>
-            </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>APELLIDO</label>
+                            <input 
+                                required 
+                                style={{ padding: '16px', fontSize: '16px' }} 
+                                value={formData.lastName}
+                                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                            />
+                        </div>
 
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-              CORREO ELECTRÓNICO (SOLO LECTURA)
-              <div style={{ position: 'relative' }}>
-                <Mail style={{ position: 'absolute', left: '14px', top: '16px', color: 'var(--accent)' }} size={18} />
-                <input value={formData.email} readOnly style={{ width: '100%', paddingLeft: '44px', height: '52px', opacity: 0.88 }} />
-              </div>
-            </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>NOMBRE DE USUARIO</label>
+                            <input 
+                                required 
+                                style={{ padding: '16px', fontSize: '16px' }} 
+                                value={formData.username}
+                                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                            />
+                        </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingTop: '8px' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.35rem', fontWeight: '900' }}><Shield size={22} color="var(--accent)" /> BRANDING (MARCA BLANCA)</h3>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-                NOMBRE DE TU ORGANIZACIÓN / MARCA
-                <div style={{ position: 'relative' }}>
-                  <Building2 style={{ position: 'absolute', left: '14px', top: '16px', color: 'var(--accent)' }} size={18} />
-                  <input value={formData.organization} onChange={(e) => setFormData({ ...formData, organization: e.target.value })} style={{ width: '100%', paddingLeft: '44px', height: '52px' }} />
-                </div>
-              </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>TELÉFONO</label>
+                            <input 
+                                required 
+                                style={{ padding: '16px', fontSize: '16px' }} 
+                                value={formData.phone}
+                                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                            />
+                        </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-                <Card hover={false} style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ width: '90px', height: '90px', borderRadius: '22px', background: 'transparent', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {previewUserImage ? <img src={previewUserImage} alt="Foto" style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent' }} /> : <div style={{ width: '100%', height: '100%', borderRadius: '22px', background: 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><User size={34} /></div>}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: '900', marginBottom: '8px' }}>Foto de perfil</p>
-                      <label style={{ display: 'inline-flex' }}>
-                        <input type="file" accept="image/*" hidden onChange={(e) => handleFile(e, 'profileImage')} />
-                        <Button type="button" variant="secondary"><Upload size={16} /> SUBIR FOTO</Button>
-                      </label>
-                    </div>
-                  </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>CORREO ELECTRÓNICO (SOLO LECTURA)</label>
+                            <div style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px solid var(--border)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Mail size={18} /> {formData.email}
+                            </div>
+                        </div>
+
+                        <h3 style={{ fontSize: '20px', fontWeight: '900', marginTop: '20px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Shield size={22} color="var(--accent)" /> BRANDING (MARCA BLANCA)
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>NOMBRE DE TU ORGANIZACIÓN / MARCA</label>
+                            <div style={{ position: 'relative' }}>
+                                <Building style={{ position: 'absolute', left: '16px', top: '16px', color: 'var(--accent)' }} size={20} />
+                                <input 
+                                    required 
+                                    style={{ width: '100%', paddingLeft: '50px', paddingRight: '20px', height: '54px' }} 
+                                    value={formData.organization}
+                                    onChange={(e) => setFormData({...formData, organization: e.target.value})}
+                                />
+                            </div>
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '5px' }}>Este nombre aparecerá en el sidebar y en los correos enviados.</p>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: formData.companyLogo ? 'transparent' : 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {formData.companyLogo ? (
+                                    <img src={formData.companyLogo} alt="Logo de Empresa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                ) : (
+                                    <Building size={40} color="var(--text-muted)" />
+                                )}
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '13px', fontWeight: '900', color: 'var(--accent)', cursor: 'pointer', padding: '8px 16px', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px' }}>
+                                    SUBIR LOGO
+                                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoChange} />
+                                </label>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Tu logo personalizado para la plataforma.</p>
+                            </div>
+                        </div>
+
+                        <Button variant='success' disabled={loading} style={{ marginTop: '20px' }}>
+                            {loading ? 'GUARDANDO...' : <><Save size={20} /> GUARDAR CAMBIOS</>}
+                        </Button>
+                    </form>
                 </Card>
 
-                <Card hover={false} style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ width: '90px', height: '90px', borderRadius: '22px', background: 'transparent', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {previewLogo ? <img src={previewLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent' }} /> : <div style={{ width: '100%', height: '100%', borderRadius: '22px', background: 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Building2 size={34} /></div>}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: '900', marginBottom: '8px' }}>Logo de la marca</p>
-                      <label style={{ display: 'inline-flex' }}>
-                        <input type="file" accept="image/*" hidden onChange={(e) => handleFile(e, 'companyLogo')} />
-                        <Button type="button" variant="cyan"><Upload size={16} /> SUBIR LOGO</Button>
-                      </label>
-                    </div>
-                  </div>
-                </Card>
-              </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                    <Card style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)', border: 'none' }}>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', marginBottom: '20px' }}>
+                            <Shield size={32} />
+                        </div>
+                        <h4 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '10px' }}>Seguridad de Cuenta</h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>Tu sesión está protegida con encriptación JWT de nivel bancario.</p>
+                        <Button variant="primary" fullWidth onClick={() => setIsPasswordModalOpen(true)} type="button">
+                            <Key size={18} /> CAMBIAR CONTRASEÑA
+                        </Button>
+                    </Card>
+                </div>
             </div>
 
-            <Button variant="success" disabled={loading} style={{ marginTop: '6px', minHeight: '56px' }}>
-              {loading ? 'GUARDANDO...' : <><Save size={18} /> GUARDAR CAMBIOS</>}
-            </Button>
-          </form>
-        </Card>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <Card hover={false} style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', marginBottom: '18px' }}><Shield size={30} /></div>
-            <h4 style={{ fontSize: '1.2rem', fontWeight: '900', marginBottom: '8px' }}>Seguridad de Cuenta</h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '18px' }}>Tu sesión y perfil se gestionan con autenticación y notificaciones de seguridad.</p>
-            <Button variant="primary" fullWidth onClick={() => setIsPasswordModalOpen(true)} type="button"><Key size={18} /> CAMBIAR CONTRASEÑA</Button>
-          </Card>
+            <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} title="CAMBIAR CONTRASEÑA">
+                <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>CONTRASEÑA ACTUAL</label>
+                        <input 
+                            type="password"
+                            required 
+                            placeholder="*************"
+                            style={{ padding: '16px', fontSize: '16px' }} 
+                            value={passwordData.oldPassword}
+                            onChange={(e) => setPasswordData({...passwordData, oldPassword: e.target.value})}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-muted)' }}>NUEVA CONTRASEÑA</label>
+                        <input 
+                            type="password"
+                            required 
+                            placeholder="Mín. 6 caracteres"
+                            style={{ padding: '16px', fontSize: '16px' }} 
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                        />
+                    </div>
+                    <Button disabled={passwordLoading} style={{ marginTop: '10px' }} fullWidth>
+                        {passwordLoading ? 'ACTUALIZANDO...' : 'ACTUALIZAR CONTRASEÑA'}
+                    </Button>
+                </form>
+            </Modal>
         </div>
-      </div>
-
-      <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} title="CAMBIAR CONTRASEÑA">
-        <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-            CONTRASEÑA ACTUAL
-            <input type="password" required placeholder="*************" style={{ padding: '16px', fontSize: '16px' }} value={passwordData.oldPassword} onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontWeight: '900', color: 'var(--text-secondary)' }}>
-            NUEVA CONTRASEÑA
-            <input type="password" required placeholder="Mín. 6 caracteres" style={{ padding: '16px', fontSize: '16px' }} value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} />
-          </label>
-          <Button variant="success" disabled={passwordLoading} style={{ marginTop: '6px' }} fullWidth>{passwordLoading ? 'ACTUALIZANDO...' : 'ACTUALIZAR CONTRASEÑA'}</Button>
-        </form>
-      </Modal>
-    </div>
-  );
+    );
 };
 
 export default Profile;
