@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
 import { User, Mail, Lock, Building, Loader2 } from 'lucide-react';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
 const Register = () => {

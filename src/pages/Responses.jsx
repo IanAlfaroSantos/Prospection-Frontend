@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '../components/UI';
 import { MessageSquare, ExternalLink, Loader2, UserPlus, Filter } from 'lucide-react';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
 const Responses = () => {
@@ -11,11 +11,8 @@ const Responses = () => {
     useEffect(() => {
         const fetchResponses = async () => {
             try {
-                const token = localStorage.getItem('token');
-                // FETCH REAL DATA FROM API
-                const response = await api.get('/api/responses', {
-                    headers: { 'x-token': token }
-                });
+                                // FETCH REAL DATA FROM API
+                const response = await api.get('/api/responses');
                 setResponses(response.data);
             } catch (error) {
                 console.error("Error fetching responses:", error);

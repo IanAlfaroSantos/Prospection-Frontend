@@ -23,7 +23,6 @@ const Sidebar = () => {
     return (
         <aside style={{
             width: '280px',
-            minWidth: '280px',
             backgroundColor: 'var(--bg-secondary)',
             height: '100vh',
             display: 'flex',
@@ -116,7 +115,7 @@ const Sidebar = () => {
                     >
                         <div style={{ width: '40px', height: '40px', background: (user?.profileImage || user?.image) ? 'transparent' : 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', overflow: 'hidden' }}>
                             {user?.profileImage || user?.image ? (
-                                <img src={user.profileImage || user.image} alt="Usuario" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={user.profileImage || user.image} alt="Usuario" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             ) : (
                                 <User size={20} />
                             )}

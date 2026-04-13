@@ -1,45 +1,17 @@
-/* index.css - Cleaned to prevent interference with premium styles */
+
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
-
-
-html, body, #root {
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
-  overflow: hidden;
-}
-
-.app-shell {
-  height: 100vh;
-  overflow: hidden;
-}
-
-.app-main {
-  height: 100vh;
-  overflow-y: auto;
   overflow-x: hidden;
-}
-
-@media (max-width: 1100px) {
-  .app-shell {
-    display: block !important;
-    height: auto;
-    overflow: auto;
-  }
-
-  .app-main {
-    height: auto !important;
-    min-height: 100vh;
-    overflow: visible;
-  }
 }

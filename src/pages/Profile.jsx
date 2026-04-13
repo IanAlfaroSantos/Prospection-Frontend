@@ -3,7 +3,7 @@ import { Card, Button, Modal } from '../components/UI';
 import { User, Building, Mail, Save, Shield, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import api from '../service/api';
+import api from '../service/api.jsx';
 
 const Profile = () => {
     const { user, login } = useAuth();
@@ -45,10 +45,7 @@ const Profile = () => {
         e.preventDefault();
         setPasswordLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            await api.put('/api/auth/change-password', passwordData, {
-                headers: { 'x-token': token }
-            });
+                        await api.put('/api/auth/change-password', passwordData);
             toast.success("Contraseña actualizada con éxito");
             setIsPasswordModalOpen(false);
             setPasswordData({ oldPassword: '', newPassword: '' });
@@ -63,10 +60,7 @@ const Profile = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.put('/api/auth/profile', formData, {
-                headers: { 'x-token': token }
-            });
+                        const response = await api.put('/api/auth/profile', formData);
             login(response.data, token);
             toast.success("¡Perfil actualizado con éxito!");
         } catch (error) {

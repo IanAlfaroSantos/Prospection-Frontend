@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Modal } from '../components/UI';
 import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, UserPlus, Users, Info, Trash2, AlertCircle, X } from 'lucide-react';
-import api from '../service/api';
+import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
 const Leads = () => {
@@ -27,10 +27,7 @@ const Leads = () => {
 
     const fetchLeads = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.get('/api/companies', {
-                headers: { 'x-token': token }
-            });
+                        const response = await api.get('/api/companies');
             setLeads(response.data);
         } catch (error) {
             toast.error("Error al cargar los leads");
@@ -46,10 +43,7 @@ const Leads = () => {
     const openDetails = async (id) => {
         setDetailsLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.get(`/api/companies/${id}`, {
-                headers: { 'x-token': token }
-            });
+                        const response = await api.get(`/api/companies/${id}`);
             setSelectedLead(response.data);
         } catch (error) {
             toast.error("Error al obtener detalles");
@@ -73,8 +67,7 @@ const Leads = () => {
         if (!newContactEmail) return toast.error("Ingresa un correo");
         setAddingContact(true);
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.post(`/api/companies/${selectedLead._id}/contacts`, 
+                        const response = await api.post(`/api/companies/${selectedLead._id}/contacts`, 
                 { email: newContactEmail, type: 'General' },
                 { headers: { 'x-token': token } }
             );
@@ -94,10 +87,7 @@ const Leads = () => {
     const handleDeleteContact = async (id) => {
         if (!id) return;
         try {
-            const token = localStorage.getItem('token');
-            await api.delete(`/api/companies/contact/${id}`, {
-                headers: { 'x-token': token }
-            });
+                        await api.delete(`/api/companies/contact/${id}`);
             setSelectedLead({
                 ...selectedLead,
                 contacts: (selectedLead.contacts || []).filter(c => c._id !== id)
@@ -113,9 +103,8 @@ const Leads = () => {
         e.preventDefault();
         setSendingEmail(true);
         try {
-            const token = localStorage.getItem('token');
-            const url = composeModal.type === 'mass' ? '/api/companies/mass-email' : `/api/companies/${composeModal.target}/contact`;
-            await api.post(url, emailData, { headers: { 'x-token': token } });
+                        const url = composeModal.type === 'mass' ? '/api/companies/mass-email' : `/api/companies/${composeModal.target}/contact`;
+            await axios.post(url, emailData);
             toast.success("¡Mensaje enviado!");
             setComposeModal({ open: false, type: 'single', target: null });
             setEmailData({ subject: '', body: '' });
@@ -129,8 +118,7 @@ const Leads = () => {
     const handleCreateManual = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
-            await api.post('/api/companies', newLead, { headers: { 'x-token': token } });
+                        await api.post('/api/companies', newLead);
             toast.success("Empresa añadida");
             setManualModalOpen(false);
             fetchLeads();
@@ -143,7 +131,7 @@ const Leads = () => {
     const companiesWithoutContacts = leads.filter(l => (l.contactCount || 0) === 0);
 
     return (
-        <div style={{ paddingBottom: '80px' }}>
+        <div style={{ paddingBottom: '80px', height: '100%', overflowY: 'auto' }}>
             <header style={{ marginBottom: '50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
                 <div>
                     <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.06em' }}>Gestión de <span style={{ color: 'var(--accent)' }}>Leads</span></h1>
@@ -154,7 +142,7 @@ const Leads = () => {
                         <Users size={20} /> ENVÍO MASIVO
                     </Button>
                     <Button variant="success" onClick={() => setManualModalOpen(true)}>
-                        <Plus size={20} /> AGREGAR EMPRESA
+                        <Plus size={20} /> NUEVA EMPRESA
                     </Button>
                 </div>
             </header>
@@ -166,7 +154,7 @@ const Leads = () => {
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '40px' }}>
                     {leads.map(lead => (
-                        <Card key={lead._id} hover={false} style={{ display: 'flex', flexDirection: 'column', padding: '0', minHeight: '430px' }}>
+                        <Card key={lead._id} style={{ display: 'flex', flexDirection: 'column', padding: '0' }}>
                             <div style={{ padding: '35px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
                                     <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)' }}>
@@ -212,9 +200,9 @@ const Leads = () => {
                             </div>
                             <h2 style={{ fontSize: '30px', fontWeight: '900', marginBottom: '20px', lineHeight: '1.2' }}>{selectedLead.name}</h2>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center', marginBottom: '40px' }}>
-                                <a href={selectedLead.website} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px', textDecoration: 'none', wordBreak: 'break-all', overflowWrap: 'anywhere' }}>
-                                    <Globe size={20} color="var(--accent)" style={{ minWidth: '20px', marginTop: '2px' }} /> <span>{selectedLead.website}</span>
-                                </a>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                    <Globe size={20} color="var(--accent)" /> <a href={selectedLead.website} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', wordBreak: 'break-all' }}>{selectedLead.website}</a>
+                                </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
                                     <MapPin size={20} color="var(--accent)" /> {selectedLead.country}
                                 </div>
@@ -273,7 +261,7 @@ const Leads = () => {
                                         value={newContactEmail} 
                                         onChange={(e) => setNewContactEmail(e.target.value)} 
                                     />
-                                    <Button type="submit" variant="success" style={{ borderRadius: '18px', padding: '18px' }}>
+                                    <Button type="submit" variant="cyan" style={{ borderRadius: '18px', padding: '18px' }}>
                                         <Plus size={28} />
                                     </Button>
                                 </form>
@@ -357,7 +345,7 @@ const Leads = () => {
                             <input placeholder="Ej: Banca" required style={{ padding: '18px' }} value={newLead.sector} onChange={(e) => setNewLead({ ...newLead, sector: e.target.value })} />
                         </div>
                     </div>
-                    <Button type="submit" fullWidth style={{ marginTop: '10px' }}>CREAR LEAD ESTRATÉGICO</Button>
+                    <Button type="submit" variant="success" fullWidth style={{ marginTop: '10px' }}>AGREGAR EMPRESA</Button>
                 </form>
             </Modal>
         </div>

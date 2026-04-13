@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
@@ -33,9 +34,9 @@ function App() {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/*" element={
                             <ProtectedRoute>
-                                <div className="app-shell" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+                                <div className="app-container" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
                                     <Sidebar />
-                                    <main className="app-main" style={{ flex: 1, padding: '2rem', height: '100vh', overflowY: 'auto', overflowX: 'hidden' }}>
+                                    <main style={{ flex: 1, padding: '2rem', height: '100vh', overflow: 'hidden' }}>
                                         <Routes>
                                             <Route path="/dashboard" element={<Dashboard />} />
                                             <Route path="/search" element={<Search />} />
