@@ -35,10 +35,10 @@ export const Button = ({ children, variant = 'primary', className = '', fullWidt
             border: 'none'
         },
         secondary: {
-            backgroundColor: '#229ED9',
-            backgroundImage: 'linear-gradient(135deg, #229ED9 0%, #38bdf8 100%)',
+            backgroundColor: '#3b82f6',
+            backgroundImage: 'linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%)',
             color: 'white',
-            boxShadow: '0 10px 20px -5px rgba(34, 158, 217, 0.45)',
+            boxShadow: '0 10px 20px -5px rgba(59, 130, 246, 0.5)',
             border: 'none'
         },
         danger: {
@@ -49,17 +49,17 @@ export const Button = ({ children, variant = 'primary', className = '', fullWidt
             border: 'none'
         },
         success: {
-            backgroundColor: '#16a34a',
-            backgroundImage: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)',
+            backgroundColor: '#10b981',
+            backgroundImage: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
             color: 'white',
-            boxShadow: '0 10px 20px -5px rgba(34, 197, 94, 0.35)',
+            boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.5)',
             border: 'none'
         },
         cyan: {
-            backgroundColor: '#22c1ee',
-            backgroundImage: 'linear-gradient(135deg, #22aeea 0%, #34d8ff 100%)',
+            backgroundColor: '#06b6d4',
+            backgroundImage: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
             color: 'white',
-            boxShadow: '0 10px 20px -5px rgba(34, 174, 234, 0.4)',
+            boxShadow: '0 10px 20px -5px rgba(6, 182, 212, 0.5)',
             border: 'none'
         },
         warning: {

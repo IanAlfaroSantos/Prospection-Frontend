@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '../components/UI';
 import { MessageSquare, ExternalLink, Loader2, UserPlus, Filter } from 'lucide-react';
-import api from '../service/api.jsx';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 
 const Responses = () => {

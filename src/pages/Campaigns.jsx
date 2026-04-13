@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '../components/UI';
 import { Send, Plus, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
-import api from '../service/api.jsx';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 
 const Campaigns = () => {

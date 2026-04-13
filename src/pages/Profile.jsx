@@ -3,7 +3,7 @@ import { Card, Button, Modal } from '../components/UI';
 import { User, Building, Mail, Save, Shield, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import api from '../service/api.jsx';
+import api from '../service/api';
 
 const Profile = () => {
     const { user, login } = useAuth();
@@ -91,9 +91,9 @@ const Profile = () => {
                         </h3>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
-                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: formData.profileImage ? 'transparent' : 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {formData.profileImage ? (
-                                    <img src={formData.profileImage} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <img src={formData.profileImage} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     <User size={40} color="var(--text-muted)" />
                                 )}
@@ -172,9 +172,9 @@ const Profile = () => {
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
-                            <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: formData.companyLogo ? 'transparent' : 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: 'var(--bg-accent)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {formData.companyLogo ? (
-                                    <img src={formData.companyLogo} alt="Logo de Empresa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <img src={formData.companyLogo} alt="Logo de Empresa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     <Building size={40} color="var(--text-muted)" />
                                 )}
@@ -188,7 +188,7 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        <Button variant='success' disabled={loading} style={{ marginTop: '20px' }}>
+                        <Button disabled={loading} style={{ marginTop: '20px' }}>
                             {loading ? 'GUARDANDO...' : <><Save size={20} /> GUARDAR CAMBIOS</>}
                         </Button>
                     </form>

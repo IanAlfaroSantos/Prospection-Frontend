@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 
 const Sidebar = () => {
     const { user, logout } = useAuth();
-    const { isDarkMode, toggleTheme } = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const menuItems = [
@@ -23,6 +23,7 @@ const Sidebar = () => {
     return (
         <aside style={{
             width: '280px',
+            minWidth: '280px',
             backgroundColor: 'var(--bg-secondary)',
             height: '100vh',
             display: 'flex',
@@ -30,8 +31,7 @@ const Sidebar = () => {
             padding: '30px 20px',
             borderRight: '1px solid var(--border)',
             position: 'sticky',
-            top: 0,
-            flexShrink: 0
+            top: 0
         }}>
             {/* BRANDING DINÁMICO (MARCA BLANCA) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '45px', padding: '0 10px' }}>
@@ -95,8 +95,8 @@ const Sidebar = () => {
                     onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                     onMouseOut={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
                 >
-                    {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                    {isDarkMode ? 'MODO CLARO' : 'MODO OSCURO'}
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    {theme === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}
                 </button>
 
                 <div style={{ padding: '5px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid var(--border)' }}>
@@ -116,7 +116,7 @@ const Sidebar = () => {
                     >
                         <div style={{ width: '40px', height: '40px', background: (user?.profileImage || user?.image) ? 'transparent' : 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', overflow: 'hidden' }}>
                             {user?.profileImage || user?.image ? (
-                                <img src={user.profileImage || user.image} alt="Usuario" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                <img src={user.profileImage || user.image} alt="Usuario" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                                 <User size={20} />
                             )}

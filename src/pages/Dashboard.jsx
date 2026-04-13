@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../components/UI';
 import { Users, Building2, Send, MessageSquare, TrendingUp, MapPin, Loader2 } from 'lucide-react';
-import api from '../service/api.jsx';
+import api from '../service/api';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, Button } from '../components/UI';
 import { Mail, Key, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../service/api.jsx';
+import api from '../service/api';
 import { toast } from 'react-hot-toast';
 
 const ForgotPassword = () => {
