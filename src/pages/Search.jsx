@@ -1,7 +1,6 @@
-
 import React, { useMemo, useState } from 'react';
 import { Card, Button } from '../components/UI';
-import { Search as SearchIcon, Globe, MapPin, Building2, Loader2, Plus, ChevronDown, ExternalLink } from 'lucide-react';
+import { Search as SearchIcon, Globe, MapPin, Building2, Loader2, ChevronDown, ExternalLink } from 'lucide-react';
 import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
@@ -10,7 +9,6 @@ const Search = () => {
     const [location, setLocation] = useState('Guatemala');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState([]);
-    const [saving, setSaving] = useState(new Set());
     const [showQueryDropdown, setShowQueryDropdown] = useState(false);
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
@@ -25,11 +23,11 @@ const Search = () => {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!query.trim()) return toast.error('Elegí un tipo de empresa');
+        if (!query.trim()) return toast.error('Escribe o elegí una categoría');
         setLoading(true);
         try {
             const response = await api.post('/api/search/start', {
-                category: query,
+                category: query.trim(),
                 country: location,
                 maxResults: 10
             });
@@ -39,29 +37,6 @@ const Search = () => {
             toast.error(error?.response?.data?.message || 'Error en la búsqueda');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleProspect = async (company) => {
-        const key = company.link || company.title;
-        setSaving((prev) => new Set(prev).add(key));
-        try {
-            await api.post('/api/companies', {
-                name: company.title,
-                website: company.link,
-                sector: query,
-                country: location,
-                source: company.source || 'DuckDuckGo'
-            });
-            toast.success(`${company.title} añadido a leads`);
-        } catch (error) {
-            toast.error(error?.response?.data?.message || 'No se pudo añadir');
-        } finally {
-            setSaving((prev) => {
-                const next = new Set(prev);
-                next.delete(key);
-                return next;
-            });
         }
     };
 
@@ -76,13 +51,21 @@ const Search = () => {
 
             <form onSubmit={handleSearch} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr auto', gap: '20px', alignItems: 'center', marginBottom: '34px' }}>
                 <div style={{ position: 'relative' }}>
-                    <button type="button" onClick={() => setShowQueryDropdown((v) => !v)} style={{ width: '100%', height: '68px', borderRadius: '18px', background: 'var(--bg-accent)', border: '1px solid var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px 0 16px', fontSize: '16px', fontWeight: '800' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+                    <div style={{ width: '100%', minHeight: '68px', borderRadius: '18px', background: 'var(--bg-accent)', border: '1px solid var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px 0 16px', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
                             <Building2 size={22} color="var(--accent)" />
-                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{query || '¿Qué tipo de empresa buscas?'}</span>
-                        </span>
-                        <ChevronDown size={20} />
-                    </button>
+                            <input
+                                value={query}
+                                onChange={(e) => { setQuery(e.target.value); setShowQueryDropdown(true); }}
+                                onFocus={() => setShowQueryDropdown(true)}
+                                placeholder="¿Qué tipo de empresa buscas?"
+                                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '800' }}
+                            />
+                        </div>
+                        <button type="button" onClick={() => setShowQueryDropdown((v) => !v)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                            <ChevronDown size={20} />
+                        </button>
+                    </div>
                     {showQueryDropdown && (
                         <div style={{ position: 'absolute', top: 'calc(100% + 10px)', left: 0, right: 0, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '18px', overflow: 'hidden', zIndex: 20, boxShadow: '0 22px 40px rgba(0,0,0,.35)' }}>
                             {filteredSectors.map((sector) => (
@@ -90,6 +73,11 @@ const Search = () => {
                                     {sector}
                                 </button>
                             ))}
+                            {query.trim() && !commonSectors.some((sector) => sector.toLowerCase() === query.trim().toLowerCase()) && (
+                                <button type="button" onMouseDown={() => setShowQueryDropdown(false)} style={{ width: '100%', textAlign: 'left', padding: '16px 18px', color: 'var(--accent)', background: 'rgba(99,102,241,0.08)', border: 'none', fontWeight: '800' }}>
+                                    Buscar con categoría personalizada: {query.trim()}
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -123,7 +111,7 @@ const Search = () => {
             ) : results.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
                     {results.map((company, index) => (
-                        <Card key={`${company.link}-${index}`} hover={false} style={{ padding: '28px', minHeight: '260px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <Card key={`${company.link}-${index}`} hover={false} style={{ padding: '28px', minHeight: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
                                     <h3 style={{ fontSize: '30px', fontWeight: '900', lineHeight: '1.1', flex: 1 }}>{company.title}</h3>

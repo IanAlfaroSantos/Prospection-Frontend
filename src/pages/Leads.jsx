@@ -1,36 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Modal } from '../components/UI';
-import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, UserPlus, Users, Info, Trash2, AlertCircle, X } from 'lucide-react';
+import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, Users, Info, Trash2, AlertCircle } from 'lucide-react';
 import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 const Leads = () => {
+    const [searchParams] = useSearchParams();
+    const selectedCategory = searchParams.get('category') || 'Todos';
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
     const [sendingEmail, setSendingEmail] = useState(false);
-
-    // Modal Composition States
     const [composeModal, setComposeModal] = useState({ open: false, type: 'single', target: null });
     const [emailData, setEmailData] = useState({ subject: '', body: '' });
-
-    // Manual lead states
     const [manualModalOpen, setManualModalOpen] = useState(false);
-    const [newLead, setNewLead] = useState({
-        name: '', website: '', sector: '', country: '',
-        contacts: []
-    });
-
+    const [newLead, setNewLead] = useState({ name: '', website: '', sector: '', country: '', contacts: [] });
     const [newContactEmail, setNewContactEmail] = useState('');
     const [addingContact, setAddingContact] = useState(false);
 
     const fetchLeads = async () => {
+        setLoading(true);
         try {
-                        const response = await api.get('/api/companies');
+            const query = selectedCategory !== 'Todos' ? `?category=${encodeURIComponent(selectedCategory)}` : '';
+            const response = await api.get(`/api/companies${query}`);
             setLeads(response.data);
-        } catch (error) {
-            toast.error("Error al cargar los leads");
+        } catch {
+            toast.error('Error al cargar las empresas');
         } finally {
             setLoading(false);
         }
@@ -38,15 +35,15 @@ const Leads = () => {
 
     useEffect(() => {
         fetchLeads();
-    }, []);
+    }, [selectedCategory]);
 
     const openDetails = async (id) => {
         setDetailsLoading(true);
         try {
-                        const response = await api.get(`/api/companies/${id}`);
+            const response = await api.get(`/api/companies/${id}`);
             setSelectedLead(response.data);
-        } catch (error) {
-            toast.error("Error al obtener detalles");
+        } catch {
+            toast.error('Error al obtener detalles');
         } finally {
             setDetailsLoading(false);
         }
@@ -64,21 +61,18 @@ const Leads = () => {
 
     const handleAddContact = async (e) => {
         e.preventDefault();
-        if (!newContactEmail) return toast.error("Ingresa un correo");
+        if (!newContactEmail) return toast.error('Ingresa un correo');
         setAddingContact(true);
         try {
-                        const response = await api.post(`/api/companies/${selectedLead._id}/contacts`, 
-                { email: newContactEmail, type: 'General' },
-                { headers: { 'x-token': token } }
-            );
+            const response = await api.post(`/api/companies/${selectedLead._id}/contacts`, { email: newContactEmail, type: 'General' });
             if (response.data.success) {
-                toast.success("¡Contacto añadido!");
+                toast.success('¡Contacto añadido!');
                 setSelectedLead({ ...selectedLead, contacts: [...(selectedLead.contacts || []), response.data.contact] });
                 setNewContactEmail('');
                 fetchLeads();
             }
-        } catch (error) {
-            toast.error("Error al guardar el contacto");
+        } catch {
+            toast.error('Error al guardar el contacto');
         } finally {
             setAddingContact(false);
         }
@@ -87,15 +81,12 @@ const Leads = () => {
     const handleDeleteContact = async (id) => {
         if (!id) return;
         try {
-                        await api.delete(`/api/companies/contact/${id}`);
-            setSelectedLead({
-                ...selectedLead,
-                contacts: (selectedLead.contacts || []).filter(c => c._id !== id)
-            });
-            toast.success("Eliminado");
+            await api.delete(`/api/companies/contact/${id}`);
+            setSelectedLead({ ...selectedLead, contacts: (selectedLead.contacts || []).filter((c) => c._id !== id) });
+            toast.success('Eliminado');
             fetchLeads();
-        } catch (error) {
-            toast.error("No se pudo eliminar");
+        } catch {
+            toast.error('No se pudo eliminar');
         }
     };
 
@@ -103,13 +94,18 @@ const Leads = () => {
         e.preventDefault();
         setSendingEmail(true);
         try {
-                        const url = composeModal.type === 'mass' ? '/api/companies/mass-email' : `/api/companies/${composeModal.target}/contact`;
-            await axios.post(url, emailData);
-            toast.success("¡Mensaje enviado!");
+            const url = composeModal.type === 'mass'
+                ? '/api/companies/mass-email'
+                : `/api/companies/${composeModal.target}/contact`;
+            const payload = composeModal.type === 'mass'
+                ? { ...emailData, category: selectedCategory }
+                : emailData;
+            await api.post(url, payload);
+            toast.success('¡Mensaje enviado!');
             setComposeModal({ open: false, type: 'single', target: null });
             setEmailData({ subject: '', body: '' });
         } catch (error) {
-            toast.error("Error al enviar");
+            toast.error(error?.response?.data?.message || 'Error al enviar');
         } finally {
             setSendingEmail(false);
         }
@@ -118,28 +114,31 @@ const Leads = () => {
     const handleCreateManual = async (e) => {
         e.preventDefault();
         try {
-                        await api.post('/api/companies', newLead);
-            toast.success("Empresa añadida");
+            await api.post('/api/companies', newLead);
+            toast.success('Empresa añadida');
             setManualModalOpen(false);
             fetchLeads();
             setNewLead({ name: '', website: '', sector: '', country: '', contacts: [] });
         } catch (error) {
-            toast.error("Error al crear la empresa");
+            toast.error(error?.response?.data?.message || 'Error al crear la empresa');
         }
     };
 
-    const companiesWithoutContacts = leads.filter(l => (l.contactCount || 0) === 0);
+    const companiesWithoutContacts = useMemo(() => leads.filter((l) => (l.contactCount || 0) === 0), [leads]);
+    const titleSuffix = selectedCategory === 'Todos' ? 'Empresas' : selectedCategory;
 
     return (
         <div style={{ paddingBottom: '80px', height: '100%', overflowY: 'auto' }}>
             <header style={{ marginBottom: '50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
                 <div>
-                    <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.06em' }}>Gestión de <span style={{ color: 'var(--accent)' }}>Leads</span></h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '20px', fontWeight: '500' }}>Convierte oportunidades en clientes reales</p>
+                    <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.06em' }}>Gestión de <span style={{ color: 'var(--accent)' }}>{titleSuffix}</span></h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '20px', fontWeight: '500' }}>
+                        {selectedCategory === 'Todos' ? 'Administra todas las empresas registradas' : `Empresas filtradas por categoría: ${selectedCategory}`}
+                    </p>
                 </div>
                 <div style={{ display: 'flex', gap: '15px' }}>
                     <Button variant="cyan" onClick={() => setComposeModal({ open: true, type: 'mass', target: null })}>
-                        <Users size={20} /> ENVÍO MASIVO
+                        <Users size={20} /> CORREO MASIVO
                     </Button>
                     <Button variant="success" onClick={() => setManualModalOpen(true)}>
                         <Plus size={20} /> NUEVA EMPRESA
@@ -151,11 +150,15 @@ const Leads = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
                     <Loader2 className="animate-spin" size={64} color="var(--accent)" />
                 </div>
+            ) : leads.length === 0 ? (
+                <div style={{ border: '1px dashed var(--border)', borderRadius: '22px', padding: '60px 24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No hay empresas registradas en esta categoría.
+                </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '40px' }}>
-                    {leads.map(lead => (
-                        <Card key={lead._id} style={{ display: 'flex', flexDirection: 'column', padding: '0' }}>
-                            <div style={{ padding: '35px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '28px' }}>
+                    {leads.map((lead) => (
+                        <Card key={lead._id} style={{ display: 'flex', flexDirection: 'column', padding: '0', minHeight: '360px' }}>
+                            <div style={{ padding: '35px', flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
                                     <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)' }}>
                                         <Building2 size={34} />
@@ -172,16 +175,22 @@ const Leads = () => {
                                     </div>
                                 </div>
                                 <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '12px', lineHeight: '1.2' }}>{lead.name}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)', fontSize: '15px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>
                                     <MapPin size={18} color="var(--accent)" /> {lead.country || 'Global'} • {lead.sector}
                                 </div>
+                                {lead.website && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)', fontSize: '14px', wordBreak: 'break-all' }}>
+                                        <Globe size={16} color="var(--accent)" />
+                                        <a href={lead.website} target="_blank" rel="noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{lead.website}</a>
+                                    </div>
+                                )}
                             </div>
                             <div style={{ padding: '30px', backgroundColor: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                 <Button variant="cyan" onClick={() => handleWriteEmail(lead)} style={{ fontSize: '13px', padding: '12px' }}>
                                     <Send size={16} /> REDACTAR CORREO
                                 </Button>
                                 <Button variant="warning" onClick={() => openDetails(lead._id)} style={{ fontSize: '13px', padding: '12px' }}>
-                                    {detailsLoading && selectedLead?._id === lead._id ? <Loader2 className="animate-spin" size={16} /> : <Info size={16} />} 
+                                    {detailsLoading && selectedLead?._id === lead._id ? <Loader2 className="animate-spin" size={16} /> : <Info size={16} />}
                                     {detailsLoading && selectedLead?._id === lead._id ? '' : 'DETALLES'}
                                 </Button>
                             </div>
@@ -190,7 +199,6 @@ const Leads = () => {
                 </div>
             )}
 
-            {/* MODAL DE PERFIL DE EMPRESA (FIXED COLORS) */}
             <Modal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} title="PERFIL ESTRATÉGICO" maxWidth="1000px">
                 {selectedLead && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) 2fr', gap: '40px' }}>
@@ -207,17 +215,10 @@ const Leads = () => {
                                     <MapPin size={20} color="var(--accent)" /> {selectedLead.country}
                                 </div>
                             </div>
-                            
-                            {/* BOTÓN REDACTAR (SIN GRIS) */}
-                            <Button 
-                                variant="cyan" 
-                                fullWidth 
-                                onClick={() => handleWriteEmail(selectedLead)}
-                            >
+                            <Button variant="cyan" fullWidth onClick={() => handleWriteEmail(selectedLead)}>
                                 <Send size={24} /> REDACTAR CORREO
                             </Button>
                         </div>
-
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
                             <div style={{ padding: '35px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '32px', border: '1px solid var(--border)' }}>
                                 <h3 style={{ marginBottom: '30px', fontWeight: '900', fontSize: '22px', display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -236,11 +237,7 @@ const Leads = () => {
                                                         </div>
                                                         <strong style={{ fontSize: '15px', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{c.email}</strong>
                                                     </div>
-                                                    <Button 
-                                                        variant="danger" 
-                                                        style={{ padding: '8px 12px', borderRadius: '10px' }}
-                                                        onClick={() => handleDeleteContact(c._id)}
-                                                    >
+                                                    <Button variant="danger" style={{ padding: '8px 12px', borderRadius: '10px' }} onClick={() => handleDeleteContact(c._id)}>
                                                         <Trash2 size={16} />
                                                     </Button>
                                                 </div>
@@ -249,20 +246,12 @@ const Leads = () => {
                                     )}
                                 </div>
                             </div>
-
                             <div style={{ padding: '35px', border: '2px dashed var(--border)', borderRadius: '32px', backgroundColor: 'rgba(255,255,255,0.01)' }}>
                                 <h4 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '25px' }}>Añadir Nuevo Contacto</h4>
                                 <form onSubmit={handleAddContact} style={{ display: 'flex', gap: '20px' }}>
-                                    <input 
-                                        placeholder="correo@ejemplo.com" 
-                                        type="email"
-                                        required
-                                        style={{ flex: 1, padding: '18px', fontSize: '16px', borderRadius: '18px' }} 
-                                        value={newContactEmail} 
-                                        onChange={(e) => setNewContactEmail(e.target.value)} 
-                                    />
+                                    <input placeholder="correo@ejemplo.com" type="email" required style={{ flex: 1, padding: '18px', fontSize: '16px', borderRadius: '18px' }} value={newContactEmail} onChange={(e) => setNewContactEmail(e.target.value)} />
                                     <Button type="submit" variant="cyan" style={{ borderRadius: '18px', padding: '18px' }}>
-                                        <Plus size={28} />
+                                        {addingContact ? <Loader2 className="animate-spin" size={20} /> : <Plus size={28} />}
                                     </Button>
                                 </form>
                             </div>
@@ -271,7 +260,6 @@ const Leads = () => {
                 )}
             </Modal>
 
-            {/* MODAL DE MENSAJE */}
             <Modal isOpen={composeModal.open} onClose={() => setComposeModal({ ...composeModal, open: false })} title="REDACTAR MENSAJE" maxWidth="850px">
                 <form onSubmit={handleSendEmail} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                     {composeModal.type === 'mass' && companiesWithoutContacts.length > 0 && (
@@ -280,51 +268,28 @@ const Leads = () => {
                                 <AlertCircle size={26} /> PANEL DE EXCLUSIÓN CRÍTICA
                             </div>
                             <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-                                El sistema omitirá a las siguientes <strong>{companiesWithoutContacts.length} empresas</strong> por falta de contactos:
+                                El sistema omitirá a las siguientes <strong>{companiesWithoutContacts.length} empresas</strong> por falta de contactos.
                             </p>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                {companiesWithoutContacts.map(l => (
-                                    <span key={l._id} style={{ fontSize: '13px', backgroundColor: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e', padding: '8px 16px', borderRadius: '12px', fontWeight: '700' }}>
-                                        {l.name}
-                                    </span>
-                                ))}
-                            </div>
                         </div>
                     )}
-                    
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <label style={{ fontSize: '13px', fontWeight: '900', color: 'var(--text-muted)' }}>ASUNTO ESTRATÉGICO</label>
-                        <input 
-                            required 
-                            placeholder="Escribe un asunto que atraiga la atención..." 
-                            style={{ width: '100%', padding: '22px', fontSize: '17px', fontWeight: '800' }} 
-                            value={emailData.subject} 
-                            onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })} 
-                        />
+                        <input required placeholder="Escribe un asunto que atraiga la atención..." style={{ width: '100%', padding: '22px', fontSize: '17px', fontWeight: '800' }} value={emailData.subject} onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })} />
                     </div>
-
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <label style={{ fontSize: '13px', fontWeight: '900', color: 'var(--text-muted)' }}>CUERPO DEL MENSAJE</label>
-                        <textarea 
-                            required 
-                            placeholder="Redacta tu propuesta de valor aquí..." 
-                            style={{ width: '100%', height: '350px', padding: '30px', borderRadius: '28px', fontSize: '18px', lineHeight: '1.6', resize: 'none' }} 
-                            value={emailData.body} 
-                            onChange={(e) => setEmailData({ ...emailData, body: e.target.value })} 
-                        />
+                        <textarea required placeholder="Redacta tu propuesta de valor aquí..." style={{ width: '100%', height: '350px', padding: '30px', borderRadius: '28px', fontSize: '18px', lineHeight: '1.6', resize: 'none' }} value={emailData.body} onChange={(e) => setEmailData({ ...emailData, body: e.target.value })} />
                     </div>
-
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px', marginTop: '10px' }}>
                         <Button variant="danger" type="button" onClick={() => setComposeModal({ ...composeModal, open: false })}>CANCELAR</Button>
                         <Button disabled={sendingEmail} style={{ minWidth: '250px' }}>
-                            {sendingEmail ? <Loader2 className="animate-spin" size={26} /> : <Send size={26} />} 
+                            {sendingEmail ? <Loader2 className="animate-spin" size={26} /> : <Send size={26} />}
                             {sendingEmail ? 'ENVIANDO...' : 'ENVIAR AHORA'}
                         </Button>
                     </div>
                 </form>
             </Modal>
 
-            {/* MODAL EMPRESA MANUAL */}
             <Modal isOpen={manualModalOpen} onClose={() => setManualModalOpen(false)} title="REGISTRAR NUEVA EMPRESA">
                 <form onSubmit={handleCreateManual} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

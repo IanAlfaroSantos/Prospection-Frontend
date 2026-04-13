@@ -1,18 +1,36 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Search, Users, LogOut, Sun, Moon, Building, User, Settings } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Search, FolderKanban, LogOut, Sun, Moon, Building, User, Settings, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import api from '../service/api.jsx';
 
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [categories, setCategories] = useState(['Todos']);
+    const [openCompaniesMenu, setOpenCompaniesMenu] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get('/api/companies/categories');
+                const dynamicCategories = response.data?.categories || [];
+                setCategories(['Todos', ...dynamicCategories.filter((item) => item && item !== 'Todos')]);
+            } catch {
+                setCategories(['Todos']);
+            }
+        };
+        fetchCategories();
+    }, [location.pathname]);
+
+    const isCompaniesSectionActive = useMemo(() => location.pathname.startsWith('/leads'), [location.pathname]);
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
-        { icon: <Search size={20} />, label: 'Prospección', path: '/search' }, // Corregido el path a /search
-        { icon: <Users size={20} />, label: 'Mis Leads', path: '/leads' },
+        { icon: <Search size={20} />, label: 'Prospección', path: '/search' }
     ];
 
     const handleLogout = () => {
@@ -30,9 +48,9 @@ const Sidebar = () => {
             padding: '30px 20px',
             borderRight: '1px solid var(--border)',
             position: 'sticky',
-            top: 0
+            top: 0,
+            overflow: 'hidden'
         }}>
-            {/* BRANDING DINÁMICO (MARCA BLANCA) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '45px', padding: '0 10px' }}>
                 <div style={{ width: '40px', height: '40px', background: user?.companyLogo ? 'transparent' : 'linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', overflow: 'hidden', padding: user?.companyLogo ? '0' : '4px' }}>
                     {user?.companyLogo ? (
@@ -46,10 +64,10 @@ const Sidebar = () => {
                 </h2>
             </div>
 
-            <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0, overflowY: 'auto', paddingRight: '4px' }}>
                 {menuItems.map((item) => (
-                    <NavLink 
-                        key={item.path} 
+                    <NavLink
+                        key={item.path}
                         to={item.path}
                         style={({ isActive }) => ({
                             display: 'flex',
@@ -70,10 +88,71 @@ const Sidebar = () => {
                         {item.label}
                     </NavLink>
                 ))}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <button
+                        type="button"
+                        onClick={() => setOpenCompaniesMenu((prev) => !prev)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '14px',
+                            padding: '14px 18px',
+                            textDecoration: 'none',
+                            color: isCompaniesSectionActive ? 'white' : 'var(--text-secondary)',
+                            backgroundColor: isCompaniesSectionActive ? 'var(--accent)' : 'transparent',
+                            borderRadius: '16px',
+                            fontWeight: isCompaniesSectionActive ? '900' : '700',
+                            fontSize: '15px',
+                            boxShadow: isCompaniesSectionActive ? '0 8px 15px -4px rgba(99, 102, 241, 0.4)' : 'none',
+                            transition: 'all 0.2s ease',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <FolderKanban size={20} />
+                            Empresas
+                        </span>
+                        <ChevronDown size={18} style={{ transform: openCompaniesMenu ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s ease' }} />
+                    </button>
+
+                    {openCompaniesMenu && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '14px' }}>
+                            {categories.map((category) => {
+                                const path = category === 'Todos' ? '/leads?category=Todos' : `/leads?category=${encodeURIComponent(category)}`;
+                                const isActive = location.pathname.startsWith('/leads') && new URLSearchParams(location.search).get('category') === category || (location.pathname.startsWith('/leads') && category === 'Todos' && !new URLSearchParams(location.search).get('category'));
+                                return (
+                                    <NavLink
+                                        key={category}
+                                        to={path}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            padding: '10px 14px',
+                                            borderRadius: '14px',
+                                            textDecoration: 'none',
+                                            color: isActive ? 'white' : 'var(--text-muted)',
+                                            background: isActive ? 'rgba(99, 102, 241, 0.25)' : 'transparent',
+                                            fontWeight: isActive ? '800' : '700',
+                                            fontSize: '13px',
+                                            border: isActive ? '1px solid rgba(99, 102, 241, 0.35)' : '1px solid transparent'
+                                        }}
+                                    >
+                                        <span style={{ width: '8px', height: '8px', borderRadius: '999px', background: isActive ? '#fff' : 'var(--accent)' }} />
+                                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category}</span>
+                                    </NavLink>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             </nav>
 
             <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <button 
+                <button
                     onClick={toggleTheme}
                     style={{
                         display: 'flex',
@@ -89,17 +168,15 @@ const Sidebar = () => {
                         fontWeight: '900',
                         cursor: 'pointer',
                         border: '1px solid var(--border)',
-                        transition: 'background-color 0.2s',
+                        transition: 'background-color 0.2s'
                     }}
-                    onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                    onMouseOut={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
                 >
                     {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     {theme === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}
                 </button>
 
                 <div style={{ padding: '5px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid var(--border)' }}>
-                    <NavLink 
+                    <NavLink
                         to="/profile"
                         style={({ isActive }) => ({
                             display: 'flex',
@@ -126,18 +203,18 @@ const Sidebar = () => {
                         </div>
                         <Settings size={18} style={{ color: 'var(--text-muted)' }} />
                     </NavLink>
-                    
-                    <button 
-                        onClick={handleLogout} 
-                        style={{ 
+
+                    <button
+                        onClick={handleLogout}
+                        style={{
                             width: '100%',
                             marginTop: '5px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
                             padding: '12px',
-                            color: '#ff4757', 
-                            background: 'none', 
+                            color: '#ff4757',
+                            background: 'none',
                             border: 'none',
                             cursor: 'pointer',
                             fontWeight: '800',
