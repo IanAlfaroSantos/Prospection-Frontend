@@ -36,7 +36,7 @@ function App() {
                             <ProtectedRoute>
                                 <div className="app-container" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
                                     <Sidebar />
-                                    <main style={{ flex: 1, padding: '2rem', height: '100vh', overflow: 'hidden' }}>
+                                    <main style={{ flex: 1, padding: '2rem', height: '100vh', overflowY: 'auto', overflowX: 'hidden' }}>
                                         <Routes>
                                             <Route path="/dashboard" element={<Dashboard />} />
                                             <Route path="/search" element={<Search />} />
