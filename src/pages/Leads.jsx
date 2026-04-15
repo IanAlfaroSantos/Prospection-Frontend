@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Modal } from '../components/UI';
-import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, Users, Info, Trash2, AlertCircle } from 'lucide-react';
+import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, Users, Info, Trash2, AlertCircle, Phone, Smartphone, MessageCircle, Briefcase } from 'lucide-react';
 import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
@@ -214,6 +214,36 @@ const Leads = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
                                     <MapPin size={20} color="var(--accent)" /> {selectedLead.country}
                                 </div>
+                                {selectedLead.landline && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                        <Phone size={20} color="var(--accent)" /> {selectedLead.landline}
+                                    </div>
+                                )}
+                                {selectedLead.mobile && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                        <Smartphone size={20} color="var(--accent)" /> {selectedLead.mobile}
+                                    </div>
+                                )}
+                                {selectedLead.whatsapp && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                        <MessageCircle size={20} color="var(--accent)" /> {selectedLead.whatsapp}
+                                    </div>
+                                )}
+                                {selectedLead.extension && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                        <Phone size={20} color="var(--accent)" /> Ext. {selectedLead.extension}
+                                    </div>
+                                )}
+                                {selectedLead.contactName && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px', textAlign: 'center' }}>
+                                        <Users size={20} color="var(--accent)" /> {selectedLead.contactName}
+                                    </div>
+                                )}
+                                {selectedLead.contactRole && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px', textAlign: 'center' }}>
+                                        <Briefcase size={20} color="var(--accent)" /> {selectedLead.contactRole}
+                                    </div>
+                                )}
                             </div>
                             <Button variant="cyan" fullWidth onClick={() => handleWriteEmail(selectedLead)}>
                                 <Send size={24} /> REDACTAR CORREO
