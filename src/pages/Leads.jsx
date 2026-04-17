@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Modal } from '../components/UI';
-import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, Users, Info, Trash2, AlertCircle, Phone, Smartphone, MessageCircle } from 'lucide-react';
+import { Building2, Globe, Mail, Loader2, MapPin, Plus, Send, Users, Info, Trash2, AlertCircle, Phone, MessageCircle } from 'lucide-react';
 import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
@@ -176,7 +176,7 @@ const Leads = () => {
                                 </div>
                                 <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '12px', lineHeight: '1.2' }}>{lead.name}</h3>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>
-                                    <MapPin size={18} color="var(--accent)" /> {(lead.address || lead.country || 'Ubicación no disponible')} • {lead.sector}
+                                    <MapPin size={18} color="var(--accent)" /> {(lead.fullAddress || lead.address || lead.country || 'Ubicación no disponible')} • {lead.sector}
                                 </div>
                                 {lead.website && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)', fontSize: '14px', wordBreak: 'break-all' }}>
@@ -212,16 +212,16 @@ const Leads = () => {
                                     <Globe size={20} color="var(--accent)" /> <a href={selectedLead.website} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', wordBreak: 'break-all' }}>{selectedLead.website}</a>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
-                                    <MapPin size={20} color="var(--accent)" /> {selectedLead.address || selectedLead.country}
+                                    <MapPin size={20} color="var(--accent)" /> {selectedLead.fullAddress || selectedLead.address || selectedLead.country}
                                 </div>
                                 {selectedLead.landline && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
                                         <Phone size={20} color="var(--accent)" /> {selectedLead.landline}
                                     </div>
                                 )}
-                                {selectedLead.mobile && (
+                                {selectedLead.phone && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', fontSize: '16px' }}>
-                                        <Smartphone size={20} color="var(--accent)" /> {selectedLead.mobile}
+                                        <Phone size={20} color="var(--accent)" /> {selectedLead.phone}
                                     </div>
                                 )}
                                 {selectedLead.whatsapp && (

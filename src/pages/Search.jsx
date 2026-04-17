@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Card, Button } from '../components/UI';
-import { Search as SearchIcon, Globe, MapPin, Building2, Loader2, ChevronDown, ExternalLink } from 'lucide-react';
+import { Search as SearchIcon, Globe, MapPin, Building2, Loader2, ChevronDown, ExternalLink, Phone, MessageCircle, Mail } from 'lucide-react';
 import api from '../service/api.jsx';
 import { toast } from 'react-hot-toast';
 
@@ -32,7 +32,7 @@ const Search = () => {
                 maxResults: 10
             });
             setResults(response.data.results || []);
-            if (!response.data.results?.length) toast('No se encontraron resultados con esa búsqueda.');
+            if (!response.data.results?.length) toast('No se encontraron empresas reales con esa búsqueda.');
         } catch (error) {
             toast.error(error?.response?.data?.message || 'Error en la búsqueda');
         } finally {
@@ -46,7 +46,7 @@ const Search = () => {
                 <h1 style={{ fontSize: '48px', fontWeight: '900', letterSpacing: '-0.06em', marginBottom: '12px' }}>
                     Buscador de <span style={{ color: 'var(--accent)' }}>Oportunidades</span>
                 </h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '20px' }}>Encuentra empresas ideales para tus servicios en segundos</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '20px' }}>Encuentra empresas reales y útiles para prospección comercial</p>
             </header>
 
             <form onSubmit={handleSearch} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr auto', gap: '20px', alignItems: 'center', marginBottom: '34px' }}>
@@ -111,17 +111,49 @@ const Search = () => {
             ) : results.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
                     {results.map((company, index) => (
-                        <Card key={`${company.link}-${index}`} hover={false} style={{ padding: '28px', minHeight: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <Card key={`${company._id || company.website || company.link}-${index}`} hover={false} style={{ padding: '28px', minHeight: '260px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                                    <h3 style={{ fontSize: '30px', fontWeight: '900', lineHeight: '1.1', flex: 1 }}>{company.title}</h3>
-                                    <span style={{ flexShrink: 0, height: '32px', padding: '0 14px', display: 'inline-flex', alignItems: 'center', borderRadius: '999px', background: 'var(--accent-light)', color: 'var(--accent)', fontWeight: '900', fontSize: '12px' }}>RESULTADO #{index + 1}</span>
+                                    <h3 style={{ fontSize: '28px', fontWeight: '900', lineHeight: '1.1', flex: 1 }}>{company.title}</h3>
+                                    <span style={{ flexShrink: 0, height: '32px', padding: '0 14px', display: 'inline-flex', alignItems: 'center', borderRadius: '999px', background: 'var(--accent-light)', color: 'var(--accent)', fontWeight: '900', fontSize: '12px' }}>REAL #{index + 1}</span>
                                 </div>
-                                <p style={{ color: 'var(--text-secondary)', marginBottom: '14px', fontSize: '18px' }}>{company.snippet || query}</p>
-                                <a href={company.link} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)', textDecoration: 'none', wordBreak: 'break-all' }}>
-                                    <Globe size={16} color="var(--accent)" /> {company.link} <ExternalLink size={15} />
-                                </a>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                                    {(company.fullAddress || company.country) && (
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                                            <MapPin size={17} color="var(--accent)" style={{ marginTop: '3px', flexShrink: 0 }} />
+                                            <span>{company.fullAddress || company.country}</span>
+                                        </div>
+                                    )}
+                                    {company.phone && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Phone size={17} color="var(--accent)" />
+                                            <span>{company.phone}{company.extension ? ` Ext. ${company.extension}` : ''}</span>
+                                        </div>
+                                    )}
+                                    {company.whatsapp && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <MessageCircle size={17} color="var(--accent)" />
+                                            <span>{company.whatsapp}</span>
+                                        </div>
+                                    )}
+                                    {company.email && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', wordBreak: 'break-all' }}>
+                                            <Mail size={17} color="var(--accent)" />
+                                            <span>{company.email}</span>
+                                        </div>
+                                    )}
+                                    <div style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+                                        {(company.category || query)}{company.subcategory ? ` • ${company.subcategory}` : ''} • {company.country}
+                                    </div>
+                                </div>
                             </div>
+
+                            {company.website && (
+                                <a href={company.website} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)', textDecoration: 'none', wordBreak: 'break-all', marginTop: '18px' }}>
+                                    <Globe size={16} color="var(--accent)" /> {company.website} <ExternalLink size={15} />
+                                </a>
+                            )}
                         </Card>
                     ))}
                 </div>
